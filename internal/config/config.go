@@ -6,6 +6,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -205,14 +206,14 @@ func (cfg *Config) Load(args []string) error {
 	// each file will overwrite the values of the previous file.
 
 	// .env is the lowest priority, so load it first.
-	if err := cfg.load(filepath.Join(cfg.path, ".env.json")); err != nil {
+	if err := cfg.unmarshal(filepath.Join(cfg.path, ".env.json")); err != nil {
 		return err
 	}
 
 	// shared environment settings are next in priority.
 	for _, shared := range environments {
 		if shared == cfg.env {
-			if err := cfg.load(filepath.Join(cfg.path, ".env."+shared.String()+".json")); err != nil {
+			if err := cfg.unmarshal(filepath.Join(cfg.path, ".env."+shared.String()+".json")); err != nil {
 				return err
 			}
 		}
@@ -220,7 +221,7 @@ func (cfg *Config) Load(args []string) error {
 
 	// .env.local is loaded for all environments except test.
 	if cfg.env != Test {
-		if err := cfg.load(filepath.Join(cfg.path, ".env.local.json")); err != nil {
+		if err := cfg.unmarshal(filepath.Join(cfg.path, ".env.local.json")); err != nil {
 			return err
 		}
 	}
@@ -228,7 +229,7 @@ func (cfg *Config) Load(args []string) error {
 	// local environment files are the highest priority, so load them last.
 	for _, local := range environments {
 		if local == cfg.env {
-			if err := cfg.load(filepath.Join(cfg.path, ".env.local."+local.String()+".json")); err != nil {
+			if err := cfg.unmarshal(filepath.Join(cfg.path, ".env.local."+local.String()+".json")); err != nil {
 				return err
 			}
 		}
@@ -285,7 +286,9 @@ func (cfg *Config) Load(args []string) error {
 	return nil
 }
 
-func (cfg *Config) load(path string) error {
+// unmarshal will return an error on unknown fields.
+// this helps to catch typos and obsolete fields in the configuration.
+func (cfg *Config) unmarshal(path string) error {
 	if cfg.Meta.ShowEnvFiles {
 		log.Printf("env: trying:: %q\n", path)
 	}
@@ -293,7 +296,10 @@ func (cfg *Config) load(path string) error {
 		if cfg.Meta.ShowEnvFiles {
 			log.Printf("env: loading: %q\n", path)
 		}
-		if err = json.Unmarshal(data, &cfg); err != nil {
+		decoder := json.NewDecoder(bytes.NewReader(data))
+		decoder.DisallowUnknownFields()
+		err = decoder.Decode(&cfg)
+		if err != nil {
 			return fmt.Errorf("%q: %v", path, err)
 		}
 		if cfg.Meta.ShowEnvFiles {
