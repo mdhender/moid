@@ -5,13 +5,17 @@ package main
 import (
 	"context"
 	"github.com/mdhender/moid/internal/config"
+	"github.com/mdhender/moid/internal/server"
 	"github.com/mdhender/moid/internal/views"
 	"github.com/mdhender/moid/ui"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
+	started := time.Now()
+
 	log.SetFlags(log.Lshortfile)
 	cfg, err := config.Default(os.Args[1:])
 	if err != nil {
@@ -22,7 +26,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("config: %+v\n", cfg)
 
 	app, err := newApplication(
 		cfg,
@@ -38,5 +41,13 @@ func main() {
 		log.Fatalf("error: %v\n", err)
 	}
 
-	log.Fatal(app.ServeCommand.Execute(app.Config.Server.Scheme, app.Config.Server.Host, app.Config.Server.Port, app.routes(), context.Background()))
+	srv, err := server.New(cfg, app.Routes(), context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	srv.Start()
+
+	log.Printf("moid: shutting down after %v\n", time.Since(started))
+
+	//log.Fatal(app.ServeCommand.Execute(app.Config.Server.Scheme, app.Config.Server.Host, app.Config.Server.Port, app.Routes(), context.Background()))
 }

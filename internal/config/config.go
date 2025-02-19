@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // Config is the configuration for the application.
@@ -32,9 +33,13 @@ type Config struct {
 
 	// Server configuration
 	Server struct {
-		Scheme string `json:"scheme,omitempty"`
-		Host   string `json:"host,omitempty"`
-		Port   string `json:"port,omitempty"`
+		Scheme         string        `json:"scheme,omitempty"`
+		Host           string        `json:"host,omitempty"`
+		Port           string        `json:"port,omitempty"`
+		ReadTimeout    time.Duration `json:"read-timeout,omitempty"`
+		WriteTimeout   time.Duration `json:"write-timeout,omitempty"`
+		IdleTimeout    time.Duration `json:"idle-timeout,omitempty"`
+		MaxHeaderBytes int           `json:"max-header-bytes,omitempty"`
 	} `json:"server,omitempty"`
 
 	// Views configuration
@@ -92,6 +97,10 @@ func Default(args []string) (*Config, error) {
 	cfg.Server.Scheme = "http"
 	cfg.Server.Host = "localhost"
 	cfg.Server.Port = "8080"
+	cfg.Server.ReadTimeout = 5 * time.Second
+	cfg.Server.WriteTimeout = 10 * time.Second
+	cfg.Server.IdleTimeout = 120 * time.Second
+	cfg.Server.MaxHeaderBytes = 1 << 20
 
 	// check for values in the environment variables
 	envSet := false
@@ -145,6 +154,10 @@ func Default(args []string) (*Config, error) {
 			}
 		} else if opt == "--help" {
 			log.Fatalf("usage: moid [--env=development|test|production] [--config-path=...] [--help] [--show-env] [--show-env-files] [--verbose]\n")
+		} else if opt == "--host" && ok && val != "" {
+			cfg.Server.Host = val
+		} else if opt == "--port" && ok && val != "" {
+			cfg.Server.Port = val
 		} else if opt == "--show-env" {
 			cfg.Meta.ShowEnv = val == "" || val == "true" || val == "yes"
 		} else if opt == "--show-env-files" {

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (a *application) routes() http.Handler {
+func (a *application) Routes() http.Handler {
 
 	r := router.New()
 
