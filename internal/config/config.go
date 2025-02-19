@@ -32,9 +32,16 @@ type Config struct {
 
 	// Server configuration
 	Server struct {
-		Host string `json:"host,omitempty"`
-		Port string `json:"port,omitempty"`
+		Scheme string `json:"scheme,omitempty"`
+		Host   string `json:"host,omitempty"`
+		Port   string `json:"port,omitempty"`
 	} `json:"server,omitempty"`
+
+	// Views configuration
+	Views struct {
+		AssetsPath string `json:"assets-path,omitempty"`
+		ViewsPath  string `json:"views-path,omitempty"`
+	} `json:"views,omitempty"`
 }
 
 // Environment is the environment the application is running in.
@@ -82,6 +89,7 @@ func Default(args []string) (*Config, error) {
 	} else if cfg.WorkingDir, err = filepath.Abs(cwd); err != nil {
 		return nil, err
 	}
+	cfg.Server.Scheme = "http"
 	cfg.Server.Host = "localhost"
 	cfg.Server.Port = "8080"
 

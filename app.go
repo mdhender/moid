@@ -11,6 +11,7 @@ import (
 	"github.com/mdhender/moid/internal/encryption"
 	"github.com/mdhender/moid/internal/ratelimiter"
 	"github.com/mdhender/moid/internal/services"
+	"github.com/mdhender/moid/internal/views"
 )
 
 type application struct {
@@ -37,4 +38,24 @@ type application struct {
 
 	ServeCommand         *commands.Serve
 	PaddleMigrateCommand *commands.PaddleMigrate
+
+	Views *views.View
+}
+
+func newApplication(
+	cfg *config.Config,
+	views *views.View,
+) (*application, error) {
+	app := &application{
+		Config: cfg,
+		Views:  views,
+	}
+
+	// wire up the controllers for the application
+	var err error
+	if app.HomeController, err = controllers.NewHomeController(app.DB, app.RateLimiter, app.Views); err != nil {
+		return nil, err
+	}
+
+	return app, nil
 }
