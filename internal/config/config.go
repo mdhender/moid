@@ -42,10 +42,14 @@ type Config struct {
 		MaxHeaderBytes int           `json:"max-header-bytes,omitempty"`
 	} `json:"server,omitempty"`
 
+	// Assets configuration
+	Assets struct {
+		Path string `json:"path,omitempty"`
+	} `json:"assets,omitempty"`
+
 	// Views configuration
 	Views struct {
-		AssetsPath string `json:"assets-path,omitempty"`
-		ViewsPath  string `json:"views-path,omitempty"`
+		Path string `json:"path,omitempty"`
 	} `json:"views,omitempty"`
 }
 

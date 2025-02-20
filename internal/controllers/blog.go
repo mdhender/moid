@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-type Home struct {
+type Blog struct {
 	db   *sql.DB
 	view *views.View
 }
 
-// NewHomeController creates a new instance of the Home controller
-func NewHomeController(db *sql.DB, view *views.View) (*Home, error) {
-	c := &Home{
+// NewBlogController creates a new instance of the Blog controller
+func NewBlogController(db *sql.DB, view *views.View) (*Blog, error) {
+	c := &Blog{
 		db:   db,
 		view: view,
 	}
@@ -25,18 +25,13 @@ func NewHomeController(db *sql.DB, view *views.View) (*Home, error) {
 	return c, nil
 }
 
-func (c Home) Show(w http.ResponseWriter, r *http.Request) {
+func (c Blog) Show(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s: %s\n", r.Method, r.URL.Path, r.RemoteAddr)
 
 	store := flash.GetStore(r)
 
-	// TODO: Implement home page logic
-	// - Fetch required data from database
-	// - Process any markdown content
-	// - Handle any necessary encryption/decryption
-
 	// - Render the template
-	c.view.Render(w, r, "index.gohtml", struct {
+	c.view.Render(w, r, "blog.gohtml", struct {
 		Error string
 	}{
 		Error: store.Get("error"),

@@ -30,6 +30,7 @@ type application struct {
 	AdminController         *controllers.Admin
 	ArticlesController      *controllers.Articles
 	AuthController          *controllers.Auth
+	BlogController          *controllers.Blog
 	HomeController          *controllers.Home
 	LqiaController          *controllers.Lqia
 	PaddleWebhookController *controllers.PaddleWebhook
@@ -39,21 +40,28 @@ type application struct {
 	ServeCommand         *commands.Serve
 	PaddleMigrateCommand *commands.PaddleMigrate
 
-	Views *views.View
+	Views  *views.View
+	Assets string
 }
 
 func newApplication(
 	cfg *config.Config,
-	views *views.View,
 ) (*application, error) {
 	app := &application{
 		Config: cfg,
-		Views:  views,
+		Assets: cfg.Assets.Path,
 	}
 
 	// wire up the controllers for the application
-	var err error
-	if app.HomeController, err = controllers.NewHomeController(app.DB, app.RateLimiter, app.Views); err != nil {
+	// should we be creating views for the controllers here?
+	if blogView, err := views.NewView("blog.gohtml", "../ui/views/blog.gohtml"); err != nil {
+		return nil, err
+	} else if app.BlogController, err = controllers.NewBlogController(app.DB, blogView); err != nil {
+		return nil, err
+	}
+	if homeView, err := views.NewView("home.gohtml", "../ui/views/home.gohtml"); err != nil {
+		return nil, err
+	} else if app.HomeController, err = controllers.NewHomeController(app.DB, homeView); err != nil {
 		return nil, err
 	}
 

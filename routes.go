@@ -3,16 +3,21 @@
 package main
 
 import (
+	"github.com/mdhender/moid/internal/middlewares"
 	"github.com/mdhender/moid/internal/router"
 	"net/http"
 )
 
 func (a *application) Routes() http.Handler {
 
-	r := router.New()
+	r := router.New(middlewares.Static(a.Assets))
 
 	// public routes (no authentication required)
-	r.Get("/", a.HomeController.Show)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+	})
+	r.Get("/home", a.HomeController.Show)
+	r.Get("/blog", a.BlogController.Show)
 
 	//r := router.New(mid("zero"))
 	//
