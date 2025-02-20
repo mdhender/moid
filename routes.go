@@ -10,14 +10,15 @@ import (
 
 func (a *application) Routes() http.Handler {
 
-	r := router.New(middlewares.Static(a.Assets))
+	r := router.New(middlewares.Static(a.Config.Assets.Path))
 
 	// public routes (no authentication required)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	})
-	r.Get("/home", a.HomeController.Show)
-	r.Get("/blog", a.BlogController.Show)
+	r.Get("/home", a.Controllers.Home.Show)
+	r.Get("/blogs", a.Controllers.Blogs.Show)
+	r.Get("/reports", a.Controllers.Reports.Show)
 
 	//r := router.New(mid("zero"))
 	//

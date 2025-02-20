@@ -4,14 +4,26 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/mdhender/moid/internal/config"
 	"github.com/mdhender/moid/internal/server"
+	"github.com/mdhender/semver"
 	"log"
 	"os"
 	"time"
 )
 
+var (
+	version = semver.Version{Major: 0, Minor: 0, Patch: 1}
+)
+
 func main() {
+	// some hacks to get the version number
+	if len(os.Args) > 1 && os.Args[1] == "version" {
+		fmt.Printf("%s\n", version.String())
+		os.Exit(0)
+	}
+
 	started := time.Now()
 
 	log.SetFlags(log.Lshortfile)

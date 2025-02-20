@@ -1,0 +1,18 @@
+[Unit]
+Description=Epimethean Web Server
+StartLimitIntervalSec=0
+After=network-online.target
+
+[Service]
+Type=simple
+User=epimethean
+Group=epimethean
+PIDFile=/run/epimethean.pid
+WorkingDirectory=/var/www/dev.epimethean/html
+ExecStart=/var/www/dev.epimethean/bin/epimethean --env=development --config-path=/var/www/dev.epimethean/services
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=on-failure
+RestartSec=13
+
+[Install]
+WantedBy=multi-user.target

@@ -19,8 +19,9 @@ import (
 // Config is the configuration for the application.
 type Config struct {
 	// env and path can only be set by from the command line or environment variables
-	env  Environment // the environment for the application
-	path string      // path is the path to the configuration files.
+	env   Environment // the environment for the application
+	path  string      // path is the path to the configuration files.
+	files []string    // files in the order in which they were loaded
 
 	// Meta is the metadata for the configuration.
 	Meta struct {
@@ -260,6 +261,10 @@ func (cfg *Config) Load(args []string) error {
 		}
 	}
 
+	if len(cfg.files) == 0 {
+		return fmt.Errorf("no configuration files found")
+	}
+
 	// finally, load the command line arguments.
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
@@ -327,6 +332,7 @@ func (cfg *Config) unmarshal(path string) error {
 		if err != nil {
 			return fmt.Errorf("%q: %v", path, err)
 		}
+		cfg.files = append(cfg.files, path) // update the list of files loaded
 		if cfg.Meta.ShowEnvFiles {
 			log.Printf("env: loaded:: %q\n", path)
 		}

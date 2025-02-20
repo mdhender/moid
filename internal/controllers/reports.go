@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-type Blog struct {
+type Reports struct {
 	db   *sql.DB
 	view *views.View
 }
 
-// NewBlogController creates a new instance of the Blog controller
-func NewBlogController(db *sql.DB, view *views.View) (*Blog, error) {
-	c := &Blog{
+// NewReportsController creates a new instance of the Reports controller
+func NewReportsController(db *sql.DB, view *views.View) (*Reports, error) {
+	c := &Reports{
 		db:   db,
 		view: view,
 	}
@@ -25,13 +25,13 @@ func NewBlogController(db *sql.DB, view *views.View) (*Blog, error) {
 	return c, nil
 }
 
-func (c Blog) Show(w http.ResponseWriter, r *http.Request) {
+func (c Reports) Show(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s: %s\n", r.Method, r.URL.Path, r.RemoteAddr)
 
 	store := flash.GetStore(r)
 
 	// - Render the template
-	c.view.Render(w, r, "blog.gohtml", struct {
+	c.view.Render(w, r, "reports.gohtml", struct {
 		Error string
 	}{
 		Error: store.Get("error"),

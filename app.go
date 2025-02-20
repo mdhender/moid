@@ -12,6 +12,7 @@ import (
 	"github.com/mdhender/moid/internal/ratelimiter"
 	"github.com/mdhender/moid/internal/services"
 	"github.com/mdhender/moid/internal/views"
+	"path/filepath"
 )
 
 type application struct {
@@ -23,25 +24,31 @@ type application struct {
 	Markdown    *services.Markdown
 	Paddle      *services.Paddle
 
-	ArticlesFacade     *actions.ArticlesFacade
-	ProductsFacade     *actions.ProductsFacade
-	TransactionsFacade *actions.TransactionsFacade
+	Facades struct {
+		Articles     *actions.ArticlesFacade
+		Products     *actions.ProductsFacade
+		Transactions *actions.TransactionsFacade
+	}
 
-	AdminController         *controllers.Admin
-	ArticlesController      *controllers.Articles
-	AuthController          *controllers.Auth
-	BlogController          *controllers.Blog
-	HomeController          *controllers.Home
-	LqiaController          *controllers.Lqia
-	PaddleWebhookController *controllers.PaddleWebhook
-	PtgController           *controllers.Ptg
-	PurchasesController     *controllers.Purchases
+	Controllers struct {
+		Admin         *controllers.Admin
+		Articles      *controllers.Articles
+		Auth          *controllers.Auth
+		Blogs         *controllers.Blogs
+		Home          *controllers.Home
+		Lqia          *controllers.Lqia
+		PaddleWebhook *controllers.PaddleWebhook
+		Ptg           *controllers.Ptg
+		Purchases     *controllers.Purchases
+		Reports       *controllers.Reports
+	}
 
-	ServeCommand         *commands.Serve
-	PaddleMigrateCommand *commands.PaddleMigrate
+	Commands struct {
+		Serve         *commands.Serve
+		PaddleMigrate *commands.PaddleMigrate
+	}
 
-	Views  *views.View
-	Assets string
+	Views *views.View
 }
 
 func newApplication(
@@ -49,19 +56,23 @@ func newApplication(
 ) (*application, error) {
 	app := &application{
 		Config: cfg,
-		Assets: cfg.Assets.Path,
 	}
 
 	// wire up the controllers for the application
 	// should we be creating views for the controllers here?
-	if blogView, err := views.NewView("blog.gohtml", "../ui/views/blog.gohtml"); err != nil {
+	if blogsView, err := views.NewView("blogs.gohtml", filepath.Join(app.Config.Views.Path, "blogs.gohtml")); err != nil {
 		return nil, err
-	} else if app.BlogController, err = controllers.NewBlogController(app.DB, blogView); err != nil {
+	} else if app.Controllers.Blogs, err = controllers.NewBlogsController(app.DB, blogsView); err != nil {
 		return nil, err
 	}
-	if homeView, err := views.NewView("home.gohtml", "../ui/views/home.gohtml"); err != nil {
+	if homeView, err := views.NewView("home.gohtml", filepath.Join(app.Config.Views.Path, "home.gohtml")); err != nil {
 		return nil, err
-	} else if app.HomeController, err = controllers.NewHomeController(app.DB, homeView); err != nil {
+	} else if app.Controllers.Home, err = controllers.NewHomeController(app.DB, homeView); err != nil {
+		return nil, err
+	}
+	if reportsView, err := views.NewView("reports.gohtml", filepath.Join(app.Config.Views.Path, "reports.gohtml")); err != nil {
+		return nil, err
+	} else if app.Controllers.Reports, err = controllers.NewReportsController(app.DB, reportsView); err != nil {
 		return nil, err
 	}
 

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Epimethean background tasks every 1 minutes
+After=network-online.target
+
+[Service]
+Type=simple
+User=epimethean
+Group=epimethean
+WorkingDirectory=/var/www/dev.epimethean
+ExecStart=/var/www/dev.epimethean/bin/epimethean-tasks.sh
