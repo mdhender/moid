@@ -58,3 +58,27 @@ a:hover {
 .text-right {
     text-align: right;
 }
+
+.counter {
+    font-family: "Courier New", monospace;
+    color: #00ff00;
+    text-shadow: 0 0 5px #00ff00;
+    letter-spacing: 2px;
+}
+
+.digit-display {
+    font-family: 'Courier New', monospace;
+    background: #001800;
+    padding: 4px 12px;
+    border: 1px solid #33ff33;
+    border-radius: 2px;
+    margin: 0 8px;
+    box-shadow: 0 0 8px rgba(51, 255, 51, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 8px rgba(51, 255, 51, 0.3); }
+    50% { box-shadow: 0 0 12px rgba(51, 255, 51, 0.5); }
+    100% { box-shadow: 0 0 8px rgba(51, 255, 51, 0.3); }
+}
