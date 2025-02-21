@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "error: not implemented yet"
+echo "       try bin/push_build.sh development"
+exit 2
 
 # confirm that we're running from the root of the repository
 [ -d bin ] || {
