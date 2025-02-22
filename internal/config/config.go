@@ -43,6 +43,11 @@ type Config struct {
 		MaxHeaderBytes int           `json:"max-header-bytes,omitempty"`
 	} `json:"server,omitempty"`
 
+	// Database configuration. The only supported database is SQLite3.
+	Database struct {
+		Path string `json:"path,omitempty"`
+	} `json:"database,omitempty"`
+
 	// Assets configuration
 	Assets struct {
 		Path string `json:"path,omitempty"`

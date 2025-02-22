@@ -1,6 +1,13 @@
 --  Copyright (c) 2025 Michael D Henderson. All rights reserved.
 --
 
+-- CreatePlayer creates a new player.
+--
+-- name: CreatePlayer :one
+INSERT INTO players (name)
+VALUES (:name)
+RETURNING id;
+
 -- CreateGame creates a new game.
 --
 -- name: CreateGame :one
@@ -21,6 +28,13 @@ WHERE id = :game_id;
 SELECT current_turn
 FROM games
 WHERE id = :game_id;
+
+-- CreateEmpire creates a new empire.
+--
+-- name: CreateEmpire :one
+INSERT INTO empires (game_id, player_id)
+VALUES (:game_id, :player_id)
+RETURNING id;
 
 -- CreateSystem creates a new system.
 --

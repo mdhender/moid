@@ -3,7 +3,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"github.com/mdhender/moid/internal/actions"
 	"github.com/mdhender/moid/internal/commands"
 	"github.com/mdhender/moid/internal/config"
@@ -11,6 +11,7 @@ import (
 	"github.com/mdhender/moid/internal/encryption"
 	"github.com/mdhender/moid/internal/ratelimiter"
 	"github.com/mdhender/moid/internal/services"
+	"github.com/mdhender/moid/internal/sqlite"
 	"github.com/mdhender/moid/internal/views"
 	"path/filepath"
 )
@@ -18,7 +19,10 @@ import (
 type application struct {
 	Config *config.Config
 
-	DB          *sql.DB
+	Database struct {
+		Store   *sqlite.Store
+		Context context.Context
+	}
 	Encrypter   *encryption.Encrypter
 	RateLimiter *ratelimiter.Limiter
 	Markdown    *services.Markdown
@@ -57,22 +61,32 @@ func newApplication(
 	app := &application{
 		Config: cfg,
 	}
+	app.Database.Context = context.Background()
+
+	var err error
+
+	// wire up the database store.
+	// TODO: we should close the database when the application is done.
+	app.Database.Store, err = sqlite.Open(cfg.Database.Path, app.Database.Context)
+	if err != nil {
+		return nil, err
+	}
 
 	// wire up the controllers for the application
 	// should we be creating views for the controllers here?
 	if blogsView, err := views.NewView("blogs.gohtml", filepath.Join(app.Config.Views.Path, "blogs.gohtml")); err != nil {
 		return nil, err
-	} else if app.Controllers.Blogs, err = controllers.NewBlogsController(app.DB, blogsView); err != nil {
+	} else if app.Controllers.Blogs, err = controllers.NewBlogsController(app.Database.Store, blogsView); err != nil {
 		return nil, err
 	}
 	if homeView, err := views.NewView("home.gohtml", filepath.Join(app.Config.Views.Path, "home.gohtml")); err != nil {
 		return nil, err
-	} else if app.Controllers.Home, err = controllers.NewHomeController(app.DB, homeView); err != nil {
+	} else if app.Controllers.Home, err = controllers.NewHomeController(app.Database.Store, homeView); err != nil {
 		return nil, err
 	}
 	if reportsView, err := views.NewView("reports.gohtml", filepath.Join(app.Config.Views.Path, "reports.gohtml")); err != nil {
 		return nil, err
-	} else if app.Controllers.Reports, err = controllers.NewReportsController(app.DB, reportsView); err != nil {
+	} else if app.Controllers.Reports, err = controllers.NewReportsController(app.Database.Store, reportsView); err != nil {
 		return nil, err
 	}
 

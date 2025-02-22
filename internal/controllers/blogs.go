@@ -3,20 +3,20 @@
 package controllers
 
 import (
-	"database/sql"
 	"github.com/mdhender/moid/internal/flash"
+	"github.com/mdhender/moid/internal/sqlite"
 	"github.com/mdhender/moid/internal/views"
 	"log"
 	"net/http"
 )
 
 type Blogs struct {
-	db   *sql.DB
+	db   *sqlite.Store
 	view *views.View
 }
 
 // NewBlogsController creates a new instance of the Blogs controller
-func NewBlogsController(db *sql.DB, view *views.View) (*Blogs, error) {
+func NewBlogsController(db *sqlite.Store, view *views.View) (*Blogs, error) {
 	c := &Blogs{
 		db:   db,
 		view: view,

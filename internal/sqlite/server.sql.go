@@ -3,7 +3,7 @@
 //   sqlc v1.28.0
 // source: server.sql
 
-package db
+package sqlite
 
 import (
 	"context"

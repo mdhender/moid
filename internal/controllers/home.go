@@ -3,8 +3,8 @@
 package controllers
 
 import (
-	"database/sql"
 	"fmt"
+	"github.com/mdhender/moid/internal/sqlite"
 	"github.com/mdhender/moid/internal/views"
 	"log"
 	"math/rand/v2"
@@ -12,12 +12,12 @@ import (
 )
 
 type Home struct {
-	db   *sql.DB
+	db   *sqlite.Store
 	view *views.View
 }
 
 // NewHomeController creates a new instance of the Home controller
-func NewHomeController(db *sql.DB, view *views.View) (*Home, error) {
+func NewHomeController(db *sqlite.Store, view *views.View) (*Home, error) {
 	c := &Home{
 		db:   db,
 		view: view,
