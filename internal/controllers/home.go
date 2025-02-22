@@ -27,8 +27,9 @@ func NewHomeController(db *sqlite.Store, view *views.View) (*Home, error) {
 }
 
 type PageData struct {
-	CounterMessage string
-	ViewCount      string
+	ViewCount string
+	Note      string
+	Snark     string
 }
 
 var viewCount int
@@ -40,8 +41,9 @@ func (c Home) Show(w http.ResponseWriter, r *http.Request) {
 	viewCount++
 
 	data := PageData{
-		CounterMessage: fmt.Sprintf("%s %s", snarks.notes[rand.IntN(len(snarks.notes))], snarks.snark[rand.IntN(len(snarks.snark))]),
-		ViewCount:      fmt.Sprintf("%012d", viewCount),
+		ViewCount: fmt.Sprintf("%012d", viewCount),
+		Note:      snarks.messages[rand.IntN(len(snarks.notes))],
+		Snark:     snarks.snark[rand.IntN(len(snarks.snark))],
 	}
 
 	// TODO: Implement home page logic
