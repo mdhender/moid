@@ -1,9 +1,8 @@
 #!/bin/bash
 ##############################################################################
-#  This script builds the executables and pushes them to the server.
+# This script builds the executables and pushes them to the server.
 ##############################################################################
-# confirm that we're running from the root of the repository
-# confirm that we're running from the root of the repository
+# Confirm that we're running from the root of the repository.
 [ -f go.mod -a -f bin/push_build.sh ] || {
   echo error: must run from the root of the repository
   exit 2
