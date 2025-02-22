@@ -11,11 +11,11 @@
 #
 db=testdata/localhost/moid.db
 ##############################################################################
-# In theory, the schema.sql contains all the commands needed to rebuild the
-# database without removing the file and starting from scratch. In a better
-# world, we'd be able to do this without having to drop the tables.
+# In theory, the DDL contains all the commands needed to rebuild the database
+# without removing the file and starting from scratch. In a better world,
+# we'd be able to do this without having to drop the tables.
 for ddl in \
-  internal/generators/sqlc/schema.sql \
+  internal/generators/sqlc/202502110915_initial.sql \
 ; do
   echo " info: running '${ddl}..."
   [ -f "${ddl}" ] || {

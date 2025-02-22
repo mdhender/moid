@@ -3,8 +3,6 @@
 -- foreign keys must be disabled to drop tables
 PRAGMA foreign_keys = OFF;
 DROP TABLE IF EXISTS meta_migrations;
-DROP TABLE IF EXISTS game_empires;
-DROP TABLE IF EXISTS game_systems;
 DROP TABLE IF EXISTS games;
 DROP TABLE IF EXISTS empires;
 DROP TABLE IF EXISTS natural_resources;
@@ -50,28 +48,14 @@ CREATE TABLE empires
     player_id INTEGER NOT NULL REFERENCES players (id)
 );
 
-CREATE TABLE game_empires
-(
-    game_id   INTEGER NOT NULL REFERENCES games (id),
-    empire_id INTEGER NOT NULL REFERENCES empires (id),
-    UNIQUE (game_id, empire_id)
-);
-
 CREATE TABLE systems
 (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    x  INTEGER NOT NULL CHECK (x BETWEEN -15 AND 15),
-    y  INTEGER NOT NULL CHECK (y BETWEEN -15 AND 15),
-    z  INTEGER NOT NULL CHECK (z BETWEEN -15 AND 15)
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_id INTEGER NOT NULL REFERENCES games (id),
+    x       INTEGER NOT NULL CHECK (x BETWEEN -15 AND 15),
+    y       INTEGER NOT NULL CHECK (y BETWEEN -15 AND 15),
+    z       INTEGER NOT NULL CHECK (z BETWEEN -15 AND 15)
 );
-
-CREATE TABLE game_systems
-(
-    game_id   INTEGER NOT NULL REFERENCES games (id),
-    system_id INTEGER NOT NULL REFERENCES systems (id),
-    UNIQUE (game_id, system_id)
-);
-
 
 CREATE TABLE stars
 (

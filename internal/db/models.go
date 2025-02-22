@@ -4,6 +4,10 @@
 
 package db
 
+import (
+	"time"
+)
+
 type Empires struct {
 	ID       int64
 	GameID   int64
@@ -16,6 +20,13 @@ type Games struct {
 	Name        string
 	DisplayName string
 	CurrentTurn int64
+}
+
+type MetaMigrations struct {
+	Version   int64
+	Comment   string
+	Script    string
+	CreatedAt time.Time
 }
 
 type NaturalResources struct {

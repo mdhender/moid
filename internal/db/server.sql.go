@@ -32,6 +32,25 @@ func (q *Queries) CreateGame(ctx context.Context, arg CreateGameParams) (int64, 
 	return id, err
 }
 
+const createStar = `-- name: CreateStar :one
+INSERT INTO stars (system_id, sequence)
+VALUES (?1, ?2)
+RETURNING id
+`
+
+type CreateStarParams struct {
+	SystemID int64
+	Sequence int64
+}
+
+// CreateStar creates a new star.
+func (q *Queries) CreateStar(ctx context.Context, arg CreateStarParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createStar, arg.SystemID, arg.Sequence)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createSystem = `-- name: CreateSystem :one
 INSERT INTO systems (game_id, x, y, z)
 VALUES (?1, ?2, ?3, ?4)
