@@ -5,10 +5,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/mdhender/moid/internal/commands"
 	"github.com/mdhender/moid/internal/config"
 	"github.com/mdhender/semver"
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"time"
 )
@@ -44,14 +45,23 @@ func main() {
 		log.Fatalf("error: %v\n", err)
 	}
 
-	srv, err := commands.NewServeHTTP(cfg, app.Routes(), context.Background())
-	if err != nil {
-		log.Fatal(err)
-	} else if err = srv.Execute(); err != nil {
+	srv := &server{
+		scheme: "http",
+		host:   cfg.Server.Host,
+		port:   cfg.Server.Port,
+		ctx:    context.Background(),
+		Server: http.Server{
+			Addr:           net.JoinHostPort(cfg.Server.Host, cfg.Server.Port),
+			Handler:        app.Routes(),
+			ReadTimeout:    cfg.Server.ReadTimeout,
+			WriteTimeout:   cfg.Server.WriteTimeout,
+			IdleTimeout:    cfg.Server.IdleTimeout,
+			MaxHeaderBytes: cfg.Server.MaxHeaderBytes,
+		},
+	}
+	if err = srv.start(); err != nil {
 		log.Fatal(err)
 	}
 
 	log.Printf("moid: shutting down after %v\n", time.Since(started))
-
-	//log.Fatal(app.ServeCommand.Execute(app.Config.Server.Scheme, app.Config.Server.Host, app.Config.Server.Port, app.Routes(), context.Background()))
 }

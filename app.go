@@ -48,7 +48,6 @@ type application struct {
 	}
 
 	Commands struct {
-		ServeWeb      *commands.ServeHTTP
 		PaddleMigrate *commands.PaddleMigrate
 	}
 
