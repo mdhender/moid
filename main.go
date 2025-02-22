@@ -5,8 +5,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/mdhender/moid/internal/commands"
 	"github.com/mdhender/moid/internal/config"
-	"github.com/mdhender/moid/internal/server"
 	"github.com/mdhender/semver"
 	"log"
 	"os"
@@ -44,11 +44,12 @@ func main() {
 		log.Fatalf("error: %v\n", err)
 	}
 
-	srv, err := server.New(cfg, app.Routes(), context.Background())
+	srv, err := commands.NewServeHTTP(cfg, app.Routes(), context.Background())
 	if err != nil {
 		log.Fatal(err)
+	} else if err = srv.Execute(); err != nil {
+		log.Fatal(err)
 	}
-	srv.Start()
 
 	log.Printf("moid: shutting down after %v\n", time.Since(started))
 

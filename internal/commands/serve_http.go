@@ -1,10 +1,6 @@
 // Copyright (c) 2025 Michael D Henderson. All rights reserved.
 
-// Package server provides the HTTP server for the application.
-// The caller must provide the router for incoming HTTP requests
-// and any needed middleware. This server implements a graceful
-// shutdown of the server.
-package server
+package commands
 
 import (
 	"context"
@@ -20,11 +16,10 @@ import (
 	"time"
 )
 
-// New returns a new instance of the server. Start the server
-// with the Start method. Returns an error only if there is an
-// invalid option passed in.
-func New(cfg *config.Config, handler http.Handler, ctx context.Context) (*Server, error) {
-	s := &Server{
+// NewServeHTTP returns a new instance of the serve command.
+// Returns an error only if there is an invalid option passed in.
+func NewServeHTTP(cfg *config.Config, handler http.Handler, ctx context.Context) (*ServeHTTP, error) {
+	c := &ServeHTTP{
 		scheme: "http",
 		host:   cfg.Server.Host,
 		port:   cfg.Server.Port,
@@ -38,37 +33,29 @@ func New(cfg *config.Config, handler http.Handler, ctx context.Context) (*Server
 			MaxHeaderBytes: cfg.Server.MaxHeaderBytes,
 		},
 	}
-
-	return s, nil
+	return c, nil
 }
 
-type Server struct {
-	http.Server
-	scheme string // must be http since we run behind a proxy
-	host   string // should this be blank so that we're not bound to localhost?
-	port   string
-	ctx    context.Context
+func (c *ServeHTTP) BaseURL() string {
+	return fmt.Sprintf("%s://%s", c.scheme, c.Addr)
 }
 
-func (s *Server) BaseURL() string {
-	return fmt.Sprintf("%s://%s", s.scheme, s.Addr)
-}
-
-// Start starts the server and blocks until the server is stopped.
+// Execute starts the server and blocks until the server is stopped.
 // It implements a graceful shutdown of the server.
 //
 // TODO: the context should be used to cancel background tasks when shutting down the server.
-func (s *Server) Start() {
+func (c *ServeHTTP) Execute() error {
 	started := time.Now()
 
 	// create a channel to listen for OS signals.
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 
-	// start the server in a goroutine so that it doesn't block.
+	// start the server in a goroutine so that the server doesn't block.
+	// note that WE will block and wait for signals to stop the server.
 	go func() {
-		log.Printf("server: listening on %s\n", fmt.Sprintf("%s://%s", s.scheme, s.Addr))
-		if err := http.ListenAndServe(s.Addr, s.Handler); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Printf("server: listening on %s\n", fmt.Sprintf("%s://%s", c.scheme, c.Addr))
+		if err := http.ListenAndServe(c.Addr, c.Handler); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("server: %v\n", err)
 		}
 		log.Printf("server: shutdown\n")
@@ -81,17 +68,26 @@ func (s *Server) Start() {
 	// graceful shutdown with a timeout.
 	timeout := time.Second * 5
 	log.Printf("server: timeout %v: creating context (%v)\n", timeout, time.Since(started))
-	ctxWithTimeout, cancel := context.WithTimeout(s.ctx, timeout)
+	ctxWithTimeout, cancel := context.WithTimeout(c.ctx, timeout)
 	defer cancel()
 
 	// cancel any idle connections.
 	log.Printf("server: canceling idle connections (%v)\n", time.Since(started))
-	s.SetKeepAlivesEnabled(false)
+	c.SetKeepAlivesEnabled(false)
 
 	log.Printf("server: shutting down the server (%v)\n", time.Since(started))
-	if err := s.Shutdown(ctxWithTimeout); err != nil {
-		log.Fatalf("server: shutdown: %v\n", err)
+	if err := c.Shutdown(ctxWithTimeout); err != nil {
+		return fmt.Errorf("server: shutdown: %w", err)
 	}
 
 	log.Printf("server: ¡stopped gracefully! (%v)\n", time.Since(started))
+	return nil
+}
+
+type ServeHTTP struct {
+	http.Server
+	scheme string // must be http since we run behind a proxy
+	host   string // should this be blank so that we're not bound to localhost?
+	port   string
+	ctx    context.Context
 }
