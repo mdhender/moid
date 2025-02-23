@@ -3,9 +3,14 @@
 package main
 
 import (
+	"github.com/mdhender/moid/internal/actions"
+	"github.com/mdhender/moid/internal/domains"
 	"github.com/mdhender/moid/internal/middlewares"
+	"github.com/mdhender/moid/internal/responders"
 	"github.com/mdhender/moid/internal/router"
+	"html/template"
 	"net/http"
+	"path/filepath"
 )
 
 func (a *application) Routes() http.Handler {
@@ -52,5 +57,27 @@ func (a *application) Routes() http.Handler {
 	//	})
 	//})
 
+	// Load templates
+	tmpl := template.Must(template.ParseFiles(filepath.Join(a.Config.Views.Path, "user-row.gohtml")))
+
+	// Dependency injection
+	userRepo := &InMemoryUserRepo{data: make(map[string]domains.User)}
+	userService := &domains.UserService{Repo: userRepo}
+	createUserResponder := &responders.CreateUserResponder{Tmpl: tmpl}
+	createUserAction := &actions.CreateUserAction{Service: userService, Responder: createUserResponder}
+
+	// Register routes
+	r.Post("/users", createUserAction.ServeHTTP)
+
 	return r
+}
+
+// Mock repository implementation
+type InMemoryUserRepo struct {
+	data map[string]domains.User
+}
+
+func (repo *InMemoryUserRepo) Save(user domains.User) error {
+	repo.data[user.Email] = user
+	return nil
 }
